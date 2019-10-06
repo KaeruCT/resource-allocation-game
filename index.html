@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width">
+    <title>resource allocation game</title>
+    <link href="style.css" rel="stylesheet" type="text/css" />
+    <script src="//cdnjs.cloudflare.com/ajax/libs/seedrandom/3.0.3/seedrandom.min.js"></script>
+  </head>
+  <body>
+    <script src="util.js"></script>
+    <script src="logic.js"></script>
+
+    <div class="columns" id="game">
+      <div id="fridge-wrap">
+          <div id="fridge" class="columns"></div>
+      </div>
+      <div class="screen" id="choose">
+      </div>
+      <div class="screen" id="score">
+        <h2>Score: <span class="score-number"></span></h2>
+        <h3>People said...</h3>
+        <ul id="advice"></ul>
+        <button id="choose-next">Next round</button>
+      </div>
+      <div class="screen" id="finish">
+        <h2>Your final score: <span class="score-number"></span></h2>
+        <button id="play-again">Play again?</button>
+      </div>
+    </div>
+
+    <script src="ui.js"></script>
+  </body>
+</html>
