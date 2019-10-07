@@ -81,6 +81,7 @@ function testDistribution(availableOptions, profiles) {
     advice: humanizeAdvice(advice),
     distribution,
     score: `${avgScore * 100}%`,
+    rawScore: avgScore * 100,
   }
 }
 
@@ -123,7 +124,6 @@ function Game({
     this.currentRound += 1;
 
     this.rounds.push(result);
-
     onScore(result);
 
     if (this.rounds.length === rounds) {

@@ -87,27 +87,37 @@ button:disabled {
   width: 100%;
 }
 
+.drink-selection {
+  margin-bottom: 20px;
+}
+
 #fridge-wrap {
   padding: 20px;
 }
 
 #fridge {
-  background: #ccc;
+  background-image: url('./img/fridge.jpeg');
+  background-position: center;
   width: 260px;
   margin: 0 auto;
   max-width: 100%;
+  min-height: 512px;
+  align-content: start;
+  padding: 44px 32px;
+  padding-left: 38px;
 }
 
 .drink {
   padding: 10px;
   max-width: 50%;
-  height: 120px;
+  height: 66px;
+  margin-top: 13px;
   text-align: center;
   position: relative;
 }
 
 .choose-drink {
-  height: 120px;
+  height: 100px;
 }
 .drink-icon {
   max-height: 100%;
@@ -130,6 +140,20 @@ button:disabled {
   width: auto !important;
   display: block;
   margin: 0 auto;
+}
+
+#finish-img {
+  text-align: center;
+  padding: 20px 0;
+}
+
+#finish-img img {
+  width: 300px;
+  max-width: 100%;
+}
+
+#play-again {
+  margin-top: 20px;
 }
 
 @media (max-width: 600px) {

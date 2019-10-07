@@ -6,6 +6,7 @@ const ROTHAUS = 'Rothaus';
 const ERDINGER = 'Erdinger';
 const TYSKIE = 'Tyskie';
 const FLENSBURGER = 'Flensburger';
+const GOSSER = 'Gösser';
 const ALKOHOL_FREI = 'Alkoholfrei';
 const WHITE_WINE = 'White Wine';
 
@@ -15,6 +16,7 @@ const DRINKS = {
   [ERDINGER]: { name: ERDINGER, img: './img/erdinger.png', background: '#cbc2a6' },
   [TYSKIE]: { name: TYSKIE, img: './img/tyskie.jpeg', background: '#fff' },
   [FLENSBURGER]: { name: FLENSBURGER, img: './img/flensburger.png', background: '#c2400c' },
+  [GOSSER]: { name: GOSSER, img: './img/gosser.png', background: '#03832c' },
   [ALKOHOL_FREI]: { name: ALKOHOL_FREI, img: './img/krombacher0.png', background: '#333' },
   [WHITE_WINE]: { name: WHITE_WINE, img: './img/wine.png', background: '#a8d' },
 };
@@ -58,13 +60,19 @@ function start() {
     game.start();
   }
 
-  function onScore({ score, advice }) {
+  function onScore({ score, advice, rawScore }) {
+    if (rawScore === 100) {
+      onFinish({ score, rawScore });
+      return;
+    }
+
     const screen = showScreen('score');
 
     const scoreEl = screen.querySelector('.score-number');
     scoreEl.innerText = score;
 
     const adviceList = document.getElementById('advice');
+    adviceList.innerHTML = '';
     const chooseNextButton = document.getElementById('choose-next');
     advice.forEach(advice => {
       const line = document.createElement('li');
@@ -72,21 +80,41 @@ function start() {
       adviceList.appendChild(line);
     });
     chooseNextButton.innerText = `Next Round (${(game.currentRound)}/${ROUNDS})`;
-    chooseNextButton.addEventListener('click', () => {
-      onChoose();
-    });
+    if (!chooseNextButton.ready) {
+      chooseNextButton.ready = true;
+      chooseNextButton.addEventListener('click', () => {
+        onChoose();
+      });
+    }
   }
 
-  function onFinish({ score }) {
+  function onFinish({ score, rawScore }) {
     const screen = showScreen('finish');
 
     const scoreEl = screen.querySelector('.score-number');
     scoreEl.innerText = score;
 
     const playAgainButton = document.getElementById('play-again');
-    playAgainButton.addEventListener('click', () => {
-      startGame();
-    });
+    if (!playAgainButton.ready) {
+      playAgainButton.ready = true;
+      playAgainButton.addEventListener('click', () => {
+        startGame();
+      });
+    }
+
+    const imgContainer = document.getElementById('finish-img');
+    imgContainer.innerHTML = '';
+    const img = document.createElement('img');
+    if (rawScore === 100) {
+      img.src = './img/happy.gif';
+    } else if (rawScore < 70) {
+      img.src = './img/neutral.gif';
+    } else {
+      img.src = './img/sad.gif';
+    }
+    
+    img.alt = 'Congratulations!';
+    imgContainer.appendChild(img);
   }
 
   function onChoose() {
