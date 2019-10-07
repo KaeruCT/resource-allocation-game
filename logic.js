@@ -111,15 +111,16 @@ function Game({
   onChoose,
   onFinish,
 }) {
-  this.profiles = range(slots).map(() => generateProfile(options));
-
-  this.currentRound = 1;
-  this.rounds = [];
-
-  onChoose();
+  this.start = () => {
+    this.profiles = range(slots).map(() => generateProfile(options));
+    this.currentRound = 1;
+    this.rounds = [];
+    onChoose();
+  }
 
   this.finishRound = choices => {
     const result = testDistribution(choices, this.profiles);
+    this.currentRound += 1;
 
     this.rounds.push(result);
 

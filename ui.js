@@ -1,6 +1,24 @@
 const SLOTS = 10;
 const ROUNDS = 4;
 
+const AUGUSTINER = 'Augustiner';
+const ROTHAUS = 'Rothaus';
+const ERDINGER = 'Erdinger';
+const TYSKIE = 'Tyskie';
+const FLENSBURGER = 'Flensburger';
+const ALKOHOL_FREI = 'Alkoholfrei';
+const WHITE_WINE = 'White Wine';
+
+const DRINKS = {
+  [AUGUSTINER]: { name: AUGUSTINER, img: './img/augustiner.png', background: '#4f2d06' },
+  [ROTHAUS]: { name: ROTHAUS, img: './img/rothaus.png', background: '#ee1a2d' },
+  [ERDINGER]: { name: ERDINGER, img: './img/erdinger.png', background: '#cbc2a6' },
+  [TYSKIE]: { name: TYSKIE, img: './img/tyskie.jpeg', background: '#fff' },
+  [FLENSBURGER]: { name: FLENSBURGER, img: './img/flensburger.png', background: '#c2400c' },
+  [ALKOHOL_FREI]: { name: ALKOHOL_FREI, img: './img/krombacher0.png', background: '#333' },
+  [WHITE_WINE]: { name: WHITE_WINE, img: './img/wine.png', background: '#a8d' },
+};
+
 const q = s => document.querySelectorAll(s);
 
 function setStyle(el, style) {
@@ -8,10 +26,9 @@ function setStyle(el, style) {
   Object.keys(style).forEach(s => el.style[s] = style[s]);
 }
 
-function getStyle(options, drink) {
-  const color = options.indexOf(drink)*360/options.length;
+function getStyle(option) {
   const style = {
-    backgroundColor: `hsl(${color}, 60%, 40%)`,
+    backgroundColor: option.background,
   };
   return style;
 }
@@ -24,11 +41,7 @@ function showScreen(id) {
 }
 
 function start() {
-  const options = [
-    'Augustiner', 'Ty',
-    'White Wine', 'Red Wine',
-    'Cider', 'Alkoholfrei',
-  ];
+  const options = DRINKS;
   let selection;
   let game;
 
@@ -37,11 +50,12 @@ function start() {
     game = new Game({
       slots: SLOTS,
       rounds: ROUNDS,
-      options,
+      options: Object.keys(DRINKS).map(drink => DRINKS[drink].name),
       onScore,
       onChoose,
       onFinish,
     });
+    game.start();
   }
 
   function onScore({ score, advice }) {
@@ -57,6 +71,7 @@ function start() {
       line.innerText = advice;
       adviceList.appendChild(line);
     });
+    chooseNextButton.innerText = `Next Round (${(game.currentRound)}/${ROUNDS})`;
     chooseNextButton.addEventListener('click', () => {
       onChoose();
     });
@@ -76,9 +91,8 @@ function start() {
 
   function onChoose() {
     const screen = showScreen('choose');
-    const undoButton = document.createElement('button');
-    undoButton.disabled = true;
     const submitButton = document.createElement('button');
+    submitButton.className = 'submit';
     submitButton.disabled = true;
 
     const selectDrink = drink => e => {
@@ -87,24 +101,26 @@ function start() {
       onSelectionChange();
     };
 
-    const undoDrink = e => {
-      e.preventDefault();
-      if (selection.length) selection.pop();
-      onSelectionChange();
-    };
-
     const onSelectionChange = () => {
-      undoButton.disabled = !selection.length;
       submitButton.disabled = selection.length < SLOTS;
       const fridge = document.getElementById('fridge');
       fridge.innerHTML = '';
       const drinks = selection.map((drink, i) => {
+        const option = options[drink];
         const el = document.createElement('div');
         el.className = 'drink';
-        setStyle(el, getStyle(options, drink));
-        el.innerText = drink;
+        setStyle(el, getStyle(option));
+        if (option.showTitleInButton) {
+          el.innerText = option.name;
+        }
+        if (option.img) {
+          const img = document.createElement('img');
+          img.src = option.img;
+          img.className = 'drink-icon';
+          el.prepend(img);
+        }
         const deleteButton = document.createElement('button');
-        deleteButton.innerText = 'x';
+        deleteButton.innerHTML = '&times;';
         deleteButton.className = 'delete';
         deleteButton.addEventListener('click', () => {
           selection.splice(i, 1);
@@ -119,11 +135,21 @@ function start() {
     onSelectionChange();
 
     screen.innerHTML = '';
-    const drinkButtons = options.map(opt => {
+    const drinkButtons = Object.keys(options).map(optKey => {
+      const option = options[optKey];
       const button = document.createElement('button');
-      button.innerText = opt;
-      button.addEventListener('click', selectDrink(opt));
-      setStyle(button, getStyle(options, opt));
+      button.className = 'choose-drink';
+      button.addEventListener('click', selectDrink(option.name));
+      setStyle(button, getStyle(option));
+      if (option.showTitleInButton) {
+        button.innerText = option.name;
+      }
+      if (option.img) {
+        const img = document.createElement('img');
+        img.src = option.img;
+        img.className = 'drink-icon';
+        button.prepend(img);
+      }
       const buttonWrap = document.createElement('div');
       buttonWrap.appendChild(button);
       return buttonWrap;
@@ -131,12 +157,6 @@ function start() {
     const drinkSelection = document.createElement('div');
     drinkSelection.className = 'columns drink-selection';
     drinkButtons.forEach(opt => drinkSelection.appendChild(opt));
-
-    const actions = document.createElement('div');
-    actions.className = 'columns actions';
-
-    undoButton.innerText = 'Undo';
-    undoButton.addEventListener('click', undoDrink);
 
     submitButton.innerText = 'Submit';
     submitButton.addEventListener('click', () => {
@@ -148,16 +168,11 @@ function start() {
       game.finishRound(choices);
     });
 
-    const undoButtonWrap = document.createElement('div');
-    undoButtonWrap.appendChild(undoButton);
-    const submitButtonWrap =  document.createElement('div');
-    submitButtonWrap.appendChild(submitButton);
-
-    actions.appendChild(undoButtonWrap);
-    actions.appendChild(submitButtonWrap);
-
+    const title = document.createElement('h2');
+    title.innerText = `Choose drinks! (Round ${game.currentRound}/${ROUNDS})`;
+    screen.appendChild(title);
     screen.appendChild(drinkSelection);
-    screen.appendChild(actions);
+    screen.appendChild(submitButton);
   }
 
   startGame();
