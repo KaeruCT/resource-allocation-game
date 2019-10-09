@@ -1,4 +1,4 @@
-const r = new Math.seedrandom(window.location.hash);
+const r = new Math.seedrandom(window.location.hash || new Date().getTime());
 
 function randValue(prob = 0.5) {
   return r() < prob;
