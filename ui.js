@@ -42,10 +42,46 @@ function showScreen(id) {
   return screen;
 }
 
+function animateAddToFridge(e, el, callback) {
+  const ghost = el.parentNode.cloneNode(true);
+  ghost.className = 'ghost choose-drink';
+  document.body.appendChild(ghost);
+  ghost.style.top = `${window.pageYOffset + e.clientY - ghost.offsetHeight/2}px`;
+  ghost.style.left = `${e.clientX - ghost.offsetWidth/2}px`;
+  setTimeout(() => {
+    const fridge = document.getElementById('fridge');
+    const fridgeRect = fridge.getBoundingClientRect();
+    ghost.style.top = `${fridgeRect.top + fridgeRect.height/2}px`;
+    ghost.style.left = `${fridgeRect.left + fridgeRect.width/2}px`;
+    ghost.style.transform = 'scale(1.5)';
+    ghost.style.opacity = '0.5';
+    ghost.style.willChange = 'transform, opacity, top, left';
+    setTimeout(() => {
+      callback();
+      document.body.removeChild(ghost);
+    }, 500);
+  }, 100);
+}
+
 function start() {
   const options = DRINKS;
   let selection;
   let game;
+  const backToSelection = document.getElementById('back-to-selection');
+
+  document.addEventListener('click', e => {
+    const parent = e.target.parentNode;
+    if (parent && parent.className && parent.className.includes('choose-view')) {
+      e.preventDefault();
+      const hash = e.target.hash;
+      if (!hash) return;
+      let name = hash.substr(1);
+      const element = document.querySelector(`[name="${name}"`);
+      if (element) {
+        element.scrollIntoView({ behavior: 'smooth' });
+      }
+    }
+  });
 
   function startGame() {
     selection = [];
@@ -61,6 +97,8 @@ function start() {
   }
 
   function onScore({ score, advice, rawScore }) {
+    backToSelection.style.display = 'none';
+    window.scrollTo(0, 0);
     if (rawScore === 100) {
       onFinish({ score, rawScore });
       return;
@@ -119,14 +157,32 @@ function start() {
 
   function onChoose() {
     const screen = showScreen('choose');
+    backToSelection.style.display = 'block';
     const submitButton = document.createElement('button');
-    submitButton.className = 'submit';
+    submitButton.className = 'submit main-submit';
     submitButton.disabled = true;
+
+    const resetButton = document.createElement('button');
+    resetButton.innerText = 'Reset Fridge';
+    resetButton.className = 'submit';
+    resetButton.addEventListener('click', () => {
+      selection = [];
+      onSelectionChange();
+    });
+    const reset = document.getElementById('reset');
+    reset.innerHTML = '';
+    reset.appendChild(resetButton);
+    const requisite = document.createElement('div');
+    requisite.className = 'requisite';
 
     const selectDrink = drink => e => {
       e.preventDefault();
-      if (selection.length < SLOTS) selection.push(drink);
-      onSelectionChange();
+      if (selection.length < SLOTS) {
+        animateAddToFridge(e, e.target, () => {
+          selection.push(drink);
+          onSelectionChange();
+        });
+      }
     };
 
     const onSelectionChange = () => {
@@ -158,9 +214,8 @@ function start() {
         return el;
       });
       drinks.forEach(drink => fridge.appendChild(drink));
+      requisite.innerText = `Fridge Capacity: ${selection.length}/${SLOTS}`;
     };
-
-    onSelectionChange();
 
     screen.innerHTML = '';
     const drinkButtons = Object.keys(options).map(optKey => {
@@ -196,11 +251,30 @@ function start() {
       game.finishRound(choices);
     });
 
+    const submit = document.createElement('div');
+    submit.className = 'columns';
+    submit.appendChild(requisite);
+    const submitButtonWrap = document.createElement('div');
+    submitButtonWrap.appendChild(submitButton);
+    submit.appendChild(submitButtonWrap);
+
     const title = document.createElement('h2');
-    title.innerText = `Choose drinks! (Round ${game.currentRound}/${ROUNDS})`;
+    title.innerHTML = `Choose drinks! (Round&nbsp;${game.currentRound}/${ROUNDS})`;
+    const viewFridgeContainer = document.createElement('div');
+    viewFridgeContainer.className = 'choose-view';
+    const viewFridge = document.createElement('a');
+    viewFridge.innerText = 'To Fridge';
+    viewFridge.href = '#fridge-view';
+    viewFridgeContainer.appendChild(viewFridge);
+    const selectionAnchor = document.createElement('a');
+    selectionAnchor.name = 'selection';
+    screen.appendChild(selectionAnchor);
     screen.appendChild(title);
+    screen.appendChild(viewFridgeContainer);
     screen.appendChild(drinkSelection);
-    screen.appendChild(submitButton);
+    screen.appendChild(submit);
+
+    onSelectionChange();
   }
 
   startGame();

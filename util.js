@@ -1,4 +1,4 @@
-const r = new Math.seedrandom('beers');
+const r = new Math.seedrandom(window.location.hash);
 
 function randValue(prob = 0.5) {
   return r() < prob;
