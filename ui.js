@@ -175,13 +175,19 @@ function start() {
     const requisite = document.createElement('div');
     requisite.className = 'requisite';
 
+    let busy = false;
     const selectDrink = drink => e => {
+      if (busy) return;
       e.preventDefault();
+      busy = true;
       if (selection.length < SLOTS) {
         animateAddToFridge(e, e.target, () => {
           selection.push(drink);
           onSelectionChange();
+          busy = false;
         });
+      } else {
+        busy = false;
       }
     };
 
